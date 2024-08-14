@@ -10,10 +10,8 @@ public class MainPanel extends JPanel {
 
     public MainPanel() {
         // Set layout manager (Make them align vertically)
+        // Y_AXIS - Components are laid out vertically from top to bottom.
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
-
-        Border panelBorder = BorderFactory.createLineBorder(Color.BLACK);
-        this.setBorder(panelBorder);
 
         // Create a label for the title
         JLabel titleLabel = new JLabel("Main Menu");
@@ -41,6 +39,8 @@ public class MainPanel extends JPanel {
 
         // Add action listeners to buttons
         playButton.addActionListener(new ActionListener() {
+            // The actionPerformed method is an abstract method defined in the ActionListener interface.
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // Start the game or transition to the game screen
                 System.out.println("Play button pressed");
@@ -48,6 +48,7 @@ public class MainPanel extends JPanel {
         });
 
         configButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // Transition to the configuration screen
                 System.out.println("Config button pressed");
@@ -55,6 +56,7 @@ public class MainPanel extends JPanel {
         });
 
         highScoreButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // Transition to the high scores screen
                 System.out.println("High Scores button pressed");
@@ -62,6 +64,7 @@ public class MainPanel extends JPanel {
         });
 
         exitButton.addActionListener(new ActionListener() {
+            @Override
             public void actionPerformed(ActionEvent e) {
                 // Exit the program
                 System.exit(0);
@@ -73,6 +76,8 @@ public class MainPanel extends JPanel {
         authorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Add spacing between elements
+        // createVerticalStrut: Creates an invisible, fixed-height component. In a vertical box,
+        // you typically use this method to force a certain amount of space between two components.
         add(Box.createVerticalStrut(20));  // Add some space at the top
         add(titleLabel);
         add(Box.createVerticalStrut(40));  // Add space between title and buttons
