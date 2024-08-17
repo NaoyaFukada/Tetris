@@ -1,78 +1,39 @@
 package ui.panel;
+import ui.MainFrame;
 
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
 public class MainPanel extends JPanel {
 
-    public MainPanel() {
+    private MainFrame mainFrame;
+
+    public MainPanel(MainFrame mainFrame) {
+        this.mainFrame = mainFrame;
+
         // Set layout manager (Make them align vertically)
         // Y_AXIS - Components are laid out vertically from top to bottom.
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
 
         // Create a label for the title
-        JLabel titleLabel = new JLabel("Main Menu");
-        titleLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
-        titleLabel.setFont(new Font("Arial", Font.BOLD, 24));
+        JLabel titleLabel = createLabel("Main Menu", new Font("Arial", Font.BOLD, 24));
 
         // Create the buttons
-        JButton playButton = new JButton("Play");
-        JButton configButton = new JButton("Configuation");
-        JButton highScoreButton = new JButton("High Scores");
-        JButton exitButton = new JButton("Exit");
-
-        // Set buttons to have the same size and align center
-        Dimension buttonSize = new Dimension(200, 40);
-        playButton.setMaximumSize(buttonSize);
-        configButton.setMaximumSize(buttonSize);
-        highScoreButton.setMaximumSize(buttonSize);
-        exitButton.setMaximumSize(buttonSize);
-
-        // Align buttons to the center of the panel
-        playButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        configButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        highScoreButton.setAlignmentX(Component.CENTER_ALIGNMENT);
-        exitButton.setAlignmentX(Component.CENTER_ALIGNMENT);
+        JButton playButton = createButton("Play");
+        JButton configButton = createButton("Configuation");
+        JButton highScoreButton = createButton("High Scores");
+        JButton exitButton = createButton("Exit");
 
         // Add action listeners to buttons
-        playButton.addActionListener(new ActionListener() {
-            // The actionPerformed method is an abstract method defined in the ActionListener interface.
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Start the game or transition to the game screen
-                System.out.println("Play button pressed");
-            }
-        });
-
-        configButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Transition to the configuration screen
-                System.out.println("Config button pressed");
-            }
-        });
-
-        highScoreButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Transition to the high scores screen
-                System.out.println("High Scores button pressed");
-            }
-        });
-
-        exitButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Exit the program
-                System.exit(0);
-            }
-        });
+        playButton.addActionListener(createPlayButtonListener());
+        configButton.addActionListener(createConfigButtonListener());
+        highScoreButton.addActionListener(createHighScoreButtonListener());
+        exitButton.addActionListener(createExitButtonListener());
 
         // Create a label for the author
-        JLabel authorLabel = new JLabel("Author: Naoya and Ryota");
+        JLabel authorLabel = createLabel("Author: Naoya/Ryota", null);
         authorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
 
         // Add spacing between elements
@@ -90,5 +51,65 @@ public class MainPanel extends JPanel {
         add(exitButton);
         add(Box.createVerticalStrut(40));  // Add space between buttons and author label
         add(authorLabel);
+    }
+
+    // Helper method to create a JLabel with default settings
+    private JLabel createLabel(String text, Font font) {
+        JLabel label = new JLabel(text);
+        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        if (font != null) {
+            label.setFont(font);
+        }
+        return label;
+    }
+
+    // Helper method to create a JButton with default settings
+    private JButton createButton(String text) {
+        JButton button = new JButton(text);
+        Dimension buttonSize = new Dimension(200, 40);
+        button.setMaximumSize(buttonSize);
+        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        return button;
+    }
+
+    // ActionListener for the Play button
+    private ActionListener createPlayButtonListener() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("Play button pressed");
+            }
+        };
+    }
+
+    // ActionListener for the Config button
+    private ActionListener createConfigButtonListener() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                mainFrame.showScreen("Config");
+                System.out.println("Config button pressed");
+            }
+        };
+    }
+
+    // ActionListener for the High Score button
+    private ActionListener createHighScoreButtonListener() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.out.println("High Scores button pressed");
+            }
+        };
+    }
+
+    // ActionListener for the Exit button
+    private ActionListener createExitButtonListener() {
+        return new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                System.exit(0);
+            }
+        };
     }
 }

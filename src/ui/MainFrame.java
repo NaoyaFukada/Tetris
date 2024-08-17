@@ -13,14 +13,14 @@ public class MainFrame extends JFrame {
     public MainFrame(String title) {
         // This calls the constructor of the JFrame class that accepts a String argument.
         super(title);
-        setSize(600, 400);
+        setSize(600, 410);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
         // Add different panels to the mainPanel with CardLayout
-        mainPanel.add(new MainPanel(), "Main");
-        mainPanel.add(new ConfigurePanel(), "Config");
+        mainPanel.add(new MainPanel(this), "Main");
+        mainPanel.add(new ConfigurePanel(this), "Config");
 
         // Add the mainPanel to the JFrame
         add(mainPanel);
