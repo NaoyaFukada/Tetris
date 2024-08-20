@@ -1,4 +1,5 @@
 package ui.panel;
+
 import ui.MainFrame;
 
 import javax.swing.*;
@@ -13,16 +14,23 @@ public class MainPanel extends JPanel {
     public MainPanel(MainFrame mainFrame) {
         this.mainFrame = mainFrame;
 
-        // Set layout manager (Make them align vertically)
-        // Y_AXIS - Components are laid out vertically from top to bottom.
-        setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
+        // Use GridBagLayout for flexible positioning and vertical centering
+        setLayout(new GridBagLayout());
+        GridBagConstraints gbc = new GridBagConstraints();
+        gbc.fill = GridBagConstraints.HORIZONTAL;
+        gbc.insets = new Insets(10, 10, 10, 10); // Padding around components
 
         // Create a label for the title
         JLabel titleLabel = createLabel("Main Menu", new Font("Arial", Font.BOLD, 24));
+        gbc.gridwidth = 3;
+        gbc.gridx = 0;
+        gbc.gridy = 0;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(titleLabel, gbc);
 
         // Create the buttons
         JButton playButton = createButton("Play");
-        JButton configButton = createButton("Configuation");
+        JButton configButton = createButton("Configuration");
         JButton highScoreButton = createButton("High Scores");
         JButton exitButton = createButton("Exit");
 
@@ -32,31 +40,34 @@ public class MainPanel extends JPanel {
         highScoreButton.addActionListener(createHighScoreButtonListener());
         exitButton.addActionListener(createExitButtonListener());
 
-        // Create a label for the author
-        JLabel authorLabel = createLabel("Author: Naoya/Ryota", null);
-        authorLabel.setAlignmentX(Component.CENTER_ALIGNMENT);
+        // Add buttons to the panel
+        gbc.gridwidth = 1;
+        gbc.anchor = GridBagConstraints.CENTER;
 
-        // Add spacing between elements
-        // createVerticalStrut: Creates an invisible, fixed-height component. In a vertical box,
-        // you typically use this method to force a certain amount of space between two components.
-        add(Box.createVerticalStrut(20));  // Add some space at the top
-        add(titleLabel);
-        add(Box.createVerticalStrut(40));  // Add space between title and buttons
-        add(playButton);
-        add(Box.createVerticalStrut(20));
-        add(configButton);
-        add(Box.createVerticalStrut(20));
-        add(highScoreButton);
-        add(Box.createVerticalStrut(20));
-        add(exitButton);
-        add(Box.createVerticalStrut(40));  // Add space between buttons and author label
-        add(authorLabel);
+        gbc.gridy = 1;
+        add(playButton, gbc);
+
+        gbc.gridy = 2;
+        add(configButton, gbc);
+
+        gbc.gridy = 3;
+        add(highScoreButton, gbc);
+
+        gbc.gridy = 4;
+        add(exitButton, gbc);
+
+        // Author Label
+        JLabel authorLabel = createLabel("Author: Naoya/Ryota", new Font("Arial", Font.PLAIN, 10));
+        gbc.gridy = 5;
+        gbc.gridwidth = 3;
+        gbc.anchor = GridBagConstraints.CENTER;
+        add(authorLabel, gbc);
     }
 
     // Helper method to create a JLabel with default settings
     private JLabel createLabel(String text, Font font) {
         JLabel label = new JLabel(text);
-        label.setAlignmentX(Component.CENTER_ALIGNMENT);
+        label.setHorizontalAlignment(SwingConstants.CENTER);
         if (font != null) {
             label.setFont(font);
         }
@@ -66,9 +77,7 @@ public class MainPanel extends JPanel {
     // Helper method to create a JButton with default settings
     private JButton createButton(String text) {
         JButton button = new JButton(text);
-        Dimension buttonSize = new Dimension(200, 40);
-        button.setMaximumSize(buttonSize);
-        button.setAlignmentX(Component.CENTER_ALIGNMENT);
+        button.setPreferredSize(new Dimension(200, 40));
         return button;
     }
 
@@ -77,6 +86,7 @@ public class MainPanel extends JPanel {
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                mainFrame.showScreen("Game");
                 System.out.println("Play button pressed");
             }
         };
