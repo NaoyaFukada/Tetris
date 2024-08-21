@@ -1,9 +1,6 @@
 package ui;
 
-import ui.panel.ConfigurePanel;
-import ui.panel.GamePanel;
-import ui.panel.MainPanel;
-import ui.panel.BoardPanel;
+import ui.panel.*;
 
 import javax.swing.*;
 import java.awt.*;
@@ -34,6 +31,10 @@ public class MainFrame extends JFrame {
 
         // Add GamePanel to mainPanel
         mainPanel.add(gamePanel, "Game");
+
+        // Add HighScorePanel to the mainPanel
+        HighScorePanel highScorePanel = new HighScorePanel(this);
+        mainPanel.add(highScorePanel, "HighScores");
 
         // Add the mainPanel to the JFrame
         add(mainPanel);

@@ -108,10 +108,12 @@ public class MainPanel extends JPanel {
         return new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                mainFrame.showScreen("HighScores");
                 System.out.println("High Scores button pressed");
             }
         };
     }
+
 
     // ActionListener for the Exit button
     private ActionListener createExitButtonListener() {
