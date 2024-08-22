@@ -106,9 +106,23 @@ public class BoardPanel extends JPanel implements KeyListener {
     }
 
     public void setCurrentShape() {
-        currentShape = shapes[random.nextInt(shapes.length)];
-        currentShape.reset();
-        checkOverGame();
+        // Check if the top row is filled
+        if (isTopRowFilled()) {
+            setGameOver();
+        } else {
+            // Set a new shape if the top row is not filled
+            currentShape = shapes[random.nextInt(shapes.length)];
+            currentShape.reset();
+        }
+    }
+
+    private boolean isTopRowFilled() {
+        for (int col = 0; col < BOARD_WIDTH; col++) {
+            if (board[0][col] != null) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void checkOverGame() {

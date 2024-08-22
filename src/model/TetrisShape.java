@@ -240,10 +240,6 @@ public class TetrisShape {
         return true;
     }
 
-    public void speedDown() {
-        // Empty method if speedDown behavior is not needed.
-    }
-
     public void moveRight() {
         deltaX = 1;
     }
