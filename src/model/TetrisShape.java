@@ -7,11 +7,6 @@ import java.util.Arrays;
 
 public class TetrisShape {
     private float x = 4.0f, y = 0.0f; // Use float for smooth vertical movement
-    private int normal = 600;
-    private int fast = 50;
-    private int delayTimeForMovement = normal;
-    private long beginTime;
-
     private int deltaX = 0;
     private boolean collision = false;
 
@@ -37,8 +32,6 @@ public class TetrisShape {
 
         this.blockSize = BoardPanel.BLOCK_SIZE;
         this.boardHeight = BoardPanel.BOARD_HEIGHT;
-
-        this.beginTime = System.currentTimeMillis();
     }
 
     public void reset() {
@@ -248,7 +241,7 @@ public class TetrisShape {
     }
 
     public void speedDown() {
-        delayTimeForMovement = normal;
+        // Empty method if speedDown behavior is not needed.
     }
 
     public void moveRight() {

@@ -87,7 +87,6 @@ public class BoardPanel extends JPanel implements KeyListener {
         }, this, colors[6]);
 
         currentShape = shapes[0];
-        currentShape.speedDown();
 
         // Function in here will run repeatedly with the specified delay.
         looper = new Timer(delay, new ActionListener() {
@@ -110,7 +109,6 @@ public class BoardPanel extends JPanel implements KeyListener {
         currentShape = shapes[random.nextInt(shapes.length)];
         currentShape.reset();
         checkOverGame();
-        currentShape.speedDown();
     }
 
     private void checkOverGame() {
@@ -240,8 +238,6 @@ public class BoardPanel extends JPanel implements KeyListener {
 
     @Override
     public void keyReleased(KeyEvent e) {
-        if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            currentShape.speedDown();
-        }
+        // Empty method
     }
 }
