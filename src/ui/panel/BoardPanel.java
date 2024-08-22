@@ -210,7 +210,7 @@ public class BoardPanel extends JPanel implements KeyListener {
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
             System.out.println("Attempted to speed up");
-            currentShape.speedUp();
+            currentShape.speedUp(); // Move the shape down by 1 unit
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             currentShape.moveRight();
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
@@ -236,6 +236,7 @@ public class BoardPanel extends JPanel implements KeyListener {
             }
         }
     }
+
 
     @Override
     public void keyReleased(KeyEvent e) {

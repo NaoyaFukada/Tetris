@@ -6,7 +6,7 @@ import java.awt.*;
 import java.util.Arrays;
 
 public class TetrisShape {
-    private float x = 4.0f, y = -1.0f; // Use float for smooth vertical movement
+    private float x = 4.0f, y = 0.0f; // Use float for smooth vertical movement
     private int normal = 600;
     private int fast = 50;
     private int delayTimeForMovement = normal;
@@ -26,23 +26,24 @@ public class TetrisShape {
     private long timeOfLastCollision = 0; // To track the time when the last shape collided
     private boolean isWaiting = false;
 
+    private int progress = 0; // Track progress towards the next row
+    private final int progressIncrement = 5; // Adjust this for smoother/faster movement
+    private final int progressThreshold = 100; // When progress reaches this, move to the next row
+
     public TetrisShape(int[][] coords, BoardPanel boardPanel, Color color) {
         this.coords = coords;
         this.boardPanel = boardPanel;
         this.color = color;
-        System.out.println("Coords: " + Arrays.deepToString(coords) + " Color: " + color);
 
         this.blockSize = BoardPanel.BLOCK_SIZE;
         this.boardHeight = BoardPanel.BOARD_HEIGHT;
-
-        System.out.println("Block Size: " + blockSize + " boardHeight: " + boardHeight);
 
         this.beginTime = System.currentTimeMillis();
     }
 
     public void reset() {
         this.x = 4.0f;
-        this.y = -1.0f; // Start above the visible board
+        this.y = 0.0f; // Start above the visible board
         collision = false;
 
         // Check for collision immediately after spawning
@@ -57,7 +58,6 @@ public class TetrisShape {
         }
     }
 
-
     public void update() {
         if (collision) {
             if (!isWaiting) {
@@ -65,16 +65,8 @@ public class TetrisShape {
                 timeOfLastCollision = System.currentTimeMillis();
             }
 
-            if (System.currentTimeMillis() - timeOfLastCollision >= 300) { // 1-second delay
-                // Fill the color for the board
-                for (int row = 0; row < coords.length; row++) {
-                    for (int col = 0; col < coords[0].length; col++) {
-                        int boardRow = (int) y + row;
-                        if (coords[row][col] != 0 && boardRow >= 0) {
-                            boardPanel.getBoard()[boardRow][(int) x + col] = color;
-                        }
-                    }
-                }
+            if (System.currentTimeMillis() - timeOfLastCollision >= 300) {
+                settleShape();
                 checkLine();
                 boardPanel.setCurrentShape(); // Set current shape to a new one
                 isWaiting = false;
@@ -104,31 +96,44 @@ public class TetrisShape {
 
         deltaX = 0;
 
-        if (System.currentTimeMillis() - beginTime > delayTimeForMovement) {
-            // Vertical movement
-            boolean moveY = true;
-            if (!(y + 1 + coords.length > boardHeight)) {
-                for (int row = 0; row < coords.length; row++) {
-                    for (int col = 0; col < coords[row].length; col++) {
-                        int boardRow = (int) (y + 1) + row;
-                        if (coords[row][col] != 0 && boardRow >= 0) {
-                            if (boardPanel.getBoard()[boardRow][(int) x + col] != null) {
-                                collision = true;
-                                moveY = false;
-                                y = (int) y; // Align shape to the grid to avoid glitches
-                            }
-                        }
-                    }
-                }
-                if (!collision && moveY) {
-                    y += 1.0f; // Smooth movement increment
-                }
+        // Smooth vertical movement logic
+        progress += progressIncrement;
+        if (progress >= progressThreshold) {
+            if (canMoveDown()) {
+                y += 1.0f; // Smooth movement increment
+                progress = 0; // Reset progress after moving down a row
             } else {
                 collision = true;
-                y = (int) y; // Align shape to the bottom row
+                y = (int) y; // Align shape to the grid to avoid glitches
+                settleShape();
+                checkLine();
+                boardPanel.setCurrentShape();
             }
+        } else {
+            // Perform immediate collision check considering the current yOffset
+            if (!canMoveDown()) {
+                collision = true;
+                y = (int) y; // Align shape to the grid to avoid glitches
+                settleShape();
+                checkLine();
+                boardPanel.setCurrentShape();
+            }
+        }
 
-            beginTime = System.currentTimeMillis();
+        // Ensure the shape is rendered at the correct position without delay
+        boardPanel.repaint();
+    }
+
+    private void settleShape() {
+        for (int row = 0; row < coords.length; row++) {
+            for (int col = 0; col < coords[0].length; col++) {
+                if (coords[row][col] != 0) {
+                    int boardRow = (int) y + row;
+                    if (boardRow >= 0 && boardRow < boardHeight) {
+                        boardPanel.getBoard()[boardRow][(int) x + col] = color;
+                    }
+                }
+            }
         }
     }
 
@@ -193,25 +198,53 @@ public class TetrisShape {
     }
 
     public void render(Graphics g) {
-        // Draw the shape
+        int yOffset = progress * blockSize / progressThreshold;
+
+        // Draw the shape with smooth vertical movement
         for (int row = 0; row < coords.length; row++) {
             for (int col = 0; col < coords[0].length; col++) {
-                if (coords[row][col] != 0 && y + row >= 0) { // Only draw if the row is visible
+                // Check that the shape is within the visible board before drawing
+                if (coords[row][col] != 0 && y + row >= 0) {
                     g.setColor(color);
-                    g.fillRect(Math.round(col * blockSize + x * blockSize), Math.round(row * blockSize + y * blockSize), blockSize, blockSize);
+                    g.fillRect(Math.round(col * blockSize + x * blockSize),
+                            Math.round(row * blockSize + y * blockSize + yOffset),
+                            blockSize, blockSize);
                 }
             }
         }
     }
-
 
     public int[][] getCoords() {
         return coords;
     }
 
     public void speedUp() {
-        System.out.println("Speed Up!");
-        delayTimeForMovement = fast;
+        if (!collision && canMoveDown()) {
+            y += 1.0f; // Move the shape down by 1 unit
+            progress = 0; // Reset progress to sync with immediate downward movement
+        } else {
+            collision = true; // Trigger collision if moving down isn't possible
+            settleShape();
+            checkLine();
+            boardPanel.setCurrentShape();
+        }
+        // Ensure the shape is rendered at the correct position without delay
+        boardPanel.repaint();
+    }
+
+    private boolean canMoveDown() {
+        for (int row = 0; row < coords.length; row++) {
+            for (int col = 0; col < coords[row].length; col++) {
+                if (coords[row][col] != 0) {
+                    int nextRow = (int) (y + 1 + row); // Calculate next row with yOffset in mind
+                    if (nextRow >= boardHeight ||
+                            (nextRow >= 0 && boardPanel.getBoard()[nextRow][(int) x + col] != null)) {
+                        return false;
+                    }
+                }
+            }
+        }
+        return true;
     }
 
     public void speedDown() {
