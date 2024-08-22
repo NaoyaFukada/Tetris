@@ -71,7 +71,7 @@ public class ConfigurePanel extends JPanel {
 
         // Game Level
         JLabel levelLabel = createLabel("Game Level:", null);
-        JSlider levelSlider = createSlider(1, 10, 4);
+        JSlider levelSlider = createSlider(1, 10, 1);
         JLabel levelValueLabel = createValueLabel(levelSlider.getValue());
         gbc.gridx = 0;
         gbc.gridy = 3;

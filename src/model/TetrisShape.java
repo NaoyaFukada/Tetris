@@ -1,10 +1,12 @@
 package model;
+
 import ui.panel.BoardPanel;
 
 import java.awt.*;
+import java.util.Arrays;
 
 public class TetrisShape {
-    private int x = 4, y = 0;
+    private float x = 4.0f, y = -1.0f; // Use float for smooth vertical movement
     private int normal = 600;
     private int fast = 50;
     private int delayTimeForMovement = normal;
@@ -21,45 +23,65 @@ public class TetrisShape {
     private int blockSize;
     private int boardHeight;
 
+    private long timeOfLastCollision = 0; // To track the time when the last shape collided
+    private boolean isWaiting = false;
+
     public TetrisShape(int[][] coords, BoardPanel boardPanel, Color color) {
         this.coords = coords;
         this.boardPanel = boardPanel;
         this.color = color;
+        System.out.println("Coords: " + Arrays.deepToString(coords) + " Color: " + color);
 
         this.blockSize = BoardPanel.BLOCK_SIZE;
         this.boardHeight = BoardPanel.BOARD_HEIGHT;
 
+        System.out.println("Block Size: " + blockSize + " boardHeight: " + boardHeight);
+
         this.beginTime = System.currentTimeMillis();
     }
 
-    public void setX(int x) {
-        this.x = x;
-    }
-
-    public void setY(int y) {
-        this.y = y;
-    }
-
     public void reset() {
-        this.x = 4;
-        this.y = 0;
+        this.x = 4.0f;
+        this.y = -1.0f; // Start above the visible board
         collision = false;
+
+        // Check for collision immediately after spawning
+        for (int row = 0; row < coords.length; row++) {
+            for (int col = 0; col < coords[row].length; col++) {
+                int boardRow = (int) y + row;
+                if (coords[row][col] != 0 && boardRow >= 0 && boardPanel.getBoard()[boardRow][(int) x + col] != null) {
+                    boardPanel.setGameOver();
+                    return;
+                }
+            }
+        }
     }
+
 
     public void update() {
         if (collision) {
-            // Fill the color for the board
-            for (int row = 0; row < coords.length; row++) {
-                for (int col = 0; col < coords[0].length; col++) {
-                    if (coords[row][col] != 0) {
-                        boardPanel.getBoard()[y + row][x + col] = color;
+            if (!isWaiting) {
+                isWaiting = true;
+                timeOfLastCollision = System.currentTimeMillis();
+            }
+
+            if (System.currentTimeMillis() - timeOfLastCollision >= 300) { // 1-second delay
+                // Fill the color for the board
+                for (int row = 0; row < coords.length; row++) {
+                    for (int col = 0; col < coords[0].length; col++) {
+                        int boardRow = (int) y + row;
+                        if (coords[row][col] != 0 && boardRow >= 0) {
+                            boardPanel.getBoard()[boardRow][(int) x + col] = color;
+                        }
                     }
                 }
+                checkLine();
+                boardPanel.setCurrentShape(); // Set current shape to a new one
+                isWaiting = false;
+                return;
+            } else {
+                return; // Exit early to keep waiting
             }
-            checkLine();
-            // Set current shape
-            boardPanel.setCurrentShape();
-            return;
         }
 
         // Check moving horizontally
@@ -67,8 +89,9 @@ public class TetrisShape {
         if (!(x + deltaX + coords[0].length > 10) && !(x + deltaX < 0)) {
             for (int row = 0; row < coords.length; row++) {
                 for (int col = 0; col < coords[row].length; col++) {
-                    if (coords[row][col] != 0) {
-                        if (boardPanel.getBoard()[y + row][x + deltaX + col] != null) {
+                    int boardRow = (int) y + row;
+                    if (coords[row][col] != 0 && boardRow >= 0) {
+                        if (boardPanel.getBoard()[boardRow][(int) x + deltaX + col] != null) {
                             moveX = false;
                         }
                     }
@@ -83,21 +106,26 @@ public class TetrisShape {
 
         if (System.currentTimeMillis() - beginTime > delayTimeForMovement) {
             // Vertical movement
+            boolean moveY = true;
             if (!(y + 1 + coords.length > boardHeight)) {
                 for (int row = 0; row < coords.length; row++) {
                     for (int col = 0; col < coords[row].length; col++) {
-                        if (coords[row][col] != 0) {
-                            if (boardPanel.getBoard()[y + 1 + row][x + deltaX + col] != null) {
+                        int boardRow = (int) (y + 1) + row;
+                        if (coords[row][col] != 0 && boardRow >= 0) {
+                            if (boardPanel.getBoard()[boardRow][(int) x + col] != null) {
                                 collision = true;
+                                moveY = false;
+                                y = (int) y; // Align shape to the grid to avoid glitches
                             }
                         }
                     }
                 }
-                if (!collision) {
-                    y++;
+                if (!collision && moveY) {
+                    y += 1.0f; // Smooth movement increment
                 }
             } else {
                 collision = true;
+                y = (int) y; // Align shape to the bottom row
             }
 
             beginTime = System.currentTimeMillis();
@@ -136,7 +164,7 @@ public class TetrisShape {
         for (int row = 0; row < rotatedShape.length; row++) {
             for (int col = 0; col < rotatedShape[row].length; col++) {
                 if (rotatedShape[row][col] != 0) {
-                    if (boardPanel.getBoard()[y + row][x + col] != null) {
+                    if (boardPanel.getBoard()[(int) y + row][(int) x + col] != null) {
                         return;
                     }
                 }
@@ -168,13 +196,14 @@ public class TetrisShape {
         // Draw the shape
         for (int row = 0; row < coords.length; row++) {
             for (int col = 0; col < coords[0].length; col++) {
-                if (coords[row][col] != 0) {
+                if (coords[row][col] != 0 && y + row >= 0) { // Only draw if the row is visible
                     g.setColor(color);
-                    g.fillRect(col * blockSize + x * blockSize, row * blockSize + y * blockSize, blockSize, blockSize);
+                    g.fillRect(Math.round(col * blockSize + x * blockSize), Math.round(row * blockSize + y * blockSize), blockSize, blockSize);
                 }
             }
         }
     }
+
 
     public int[][] getCoords() {
         return coords;
@@ -198,10 +227,10 @@ public class TetrisShape {
     }
 
     public int getY() {
-        return y;
+        return (int) y;
     }
 
     public int getX() {
-        return x;
+        return (int) x;
     }
 }

@@ -18,7 +18,7 @@ public class BoardPanel extends JPanel implements KeyListener {
     private int state = STATE_GAME_PLAY;
 
     private static int FPS = 60;
-    private static int delay = FPS / 1000;
+    private static int delay = 1000 / FPS;
 
     private Timer looper;
     public static final int BOARD_WIDTH = 10;
@@ -41,38 +41,55 @@ public class BoardPanel extends JPanel implements KeyListener {
     public BoardPanel() {
         random = new Random();
 
+        System.out.println("random: " + random);
+
         addKeyListener(this);
 
+        // I-shape (Straight Tetromino)
         shapes[0] = new TetrisShape(new int[][]{
                 {1, 1, 1, 1}
         }, this, colors[0]);
+
+// T-shape (T-Tetromino)
         shapes[1] = new TetrisShape(new int[][]{
                 {1, 1, 1},
                 {0, 1, 0}
         }, this, colors[1]);
+
+// L-shape (L-Tetromino)
         shapes[2] = new TetrisShape(new int[][]{
                 {1, 1, 1},
                 {1, 0, 0}
         }, this, colors[2]);
+
+// J-shape (Reverse L-Tetromino)
         shapes[3] = new TetrisShape(new int[][]{
                 {1, 1, 1},
                 {0, 0, 1}
         }, this, colors[3]);
+
+// S-shape (Skew Tetromino)
         shapes[4] = new TetrisShape(new int[][]{
                 {0, 1, 1},
                 {1, 1, 0}
         }, this, colors[4]);
+
+// Z-shape (Reverse Skew Tetromino)
         shapes[5] = new TetrisShape(new int[][]{
                 {1, 1, 0},
                 {0, 1, 1}
         }, this, colors[5]);
+
+// O-shape (Square Tetromino)
         shapes[6] = new TetrisShape(new int[][]{
                 {1, 1},
                 {1, 1}
         }, this, colors[6]);
 
         currentShape = shapes[0];
+        currentShape.speedDown();
 
+        // Function in here will run repeatedly with the specified delay.
         looper = new Timer(delay, new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -93,33 +110,51 @@ public class BoardPanel extends JPanel implements KeyListener {
         currentShape = shapes[random.nextInt(shapes.length)];
         currentShape.reset();
         checkOverGame();
+        currentShape.speedDown();
     }
 
     private void checkOverGame() {
         int[][] coords = currentShape.getCoords();
         for (int row = 0; row < coords.length; row++) {
             for (int col = 0; col < coords[0].length; col++) {
-                if (coords[row][col] != 0) {
-                    if (board[row + currentShape.getY()][col + currentShape.getX()] != null) {
+                int boardRow = row + currentShape.getY();
+                int boardCol = col + currentShape.getX();
+
+                // Check if the boardRow is within the valid range
+                if (coords[row][col] != 0 && boardRow >= 0 && boardRow < BOARD_HEIGHT) {
+                    if (board[boardRow][boardCol] != null) {
                         state = STATE_GAME_OVER;
+                        return;
                     }
                 }
             }
         }
     }
 
+
+    public void setGameOver() {
+        state = STATE_GAME_OVER;
+    }
+
+
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
+
+        // // Set the drawing color to black and fill the entire panel with it (background)
         g.setColor(Color.black);
         g.fillRect(0, 0, getWidth(), getHeight());
 
+        // Render the current falling shape (tetromino)
         currentShape.render(g);
 
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[0].length; col++) {
                 if (board[row][col] != null) {
                     g.setColor(board[row][col]);
+                    // Syntax: g.fillRect(int x, int y, int width, int height)
+                    // X: The x-coordinate of the top-left corner of the rectangle.
+                    // Y: The y-coordinate of the top-left corner of the rectangle.
                     g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
                 }
             }
@@ -137,6 +172,7 @@ public class BoardPanel extends JPanel implements KeyListener {
 
         // Draw the score
         g.setColor(Color.white);
+        // Syntax: g.drawString(String str, int x, int y);
         g.drawString("Score: " + score, 350, 50);
 
         if (state == STATE_GAME_OVER) {
@@ -148,6 +184,19 @@ public class BoardPanel extends JPanel implements KeyListener {
             g.setColor(Color.white);
             g.drawString("GAME PAUSED", 50, 200);
         }
+    }
+
+    public void resetBoard() {
+        // Clear the board
+        for (int row = 0; row < board.length; row++) {
+            for (int col = 0; col < board[row].length; col++) {
+                board[row][col] = null;
+            }
+        }
+    }
+
+    public void setGamePlayState() {
+        state = STATE_GAME_PLAY;
     }
 
     public Color[][] getBoard() {
@@ -172,13 +221,9 @@ public class BoardPanel extends JPanel implements KeyListener {
         // Clean the board
         if (state == STATE_GAME_OVER) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE) {
-                for (int row = 0; row < board.length; row++) {
-                    for (int col = 0; col < board[row].length; col++) {
-                        board[row][col] = null;
-                    }
-                }
+                resetBoard();
                 setCurrentShape();
-                state = STATE_GAME_PLAY;
+                setGamePlayState();
             }
         }
 

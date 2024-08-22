@@ -15,6 +15,7 @@ public class GamePanel extends JPanel {
         setLayout(new BorderLayout());
 
         board = new BoardPanel();
+        resetGame();
         add(board, BorderLayout.CENTER);
 
         // Create the title label
@@ -36,11 +37,22 @@ public class GamePanel extends JPanel {
         add(bottomPanel, BorderLayout.SOUTH);
     }
 
+    public void resetGame() {
+        // Call the reset logic from BoardPanel or handle it directly here
+        board.resetBoard();
+        board.setCurrentShape();
+        board.setGamePlayState();
+    }
+
     private JLabel createLabel(String text, Font font) {
         JLabel label = new JLabel(text);
         if (font != null) {
             label.setFont(font);
         }
         return label;
+    }
+
+    public BoardPanel getBoard() {
+        return board;
     }
 }
