@@ -1,10 +1,9 @@
 package ui.panel;
+
 import model.TetrisShape;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 import java.util.Random;
@@ -34,53 +33,47 @@ public class BoardPanel extends JPanel implements KeyListener {
 
     private int score = 0;
 
+    private boolean pause_showText = false;
+
     public void incrementScore() {
         score += 100; // Increment score by 100 for each line cleared
     }
 
     public BoardPanel() {
         random = new Random();
-
-        System.out.println("random: " + random);
-
+        setFocusable(true); // Ensure the panel can gain focus
         addKeyListener(this);
 
-        // I-shape (Straight Tetromino)
+        // Initialize shapes
         shapes[0] = new TetrisShape(new int[][]{
                 {1, 1, 1, 1}
         }, this, colors[0]);
 
-// T-shape (T-Tetromino)
         shapes[1] = new TetrisShape(new int[][]{
                 {1, 1, 1},
                 {0, 1, 0}
         }, this, colors[1]);
 
-// L-shape (L-Tetromino)
         shapes[2] = new TetrisShape(new int[][]{
                 {1, 1, 1},
                 {1, 0, 0}
         }, this, colors[2]);
 
-// J-shape (Reverse L-Tetromino)
         shapes[3] = new TetrisShape(new int[][]{
                 {1, 1, 1},
                 {0, 0, 1}
         }, this, colors[3]);
 
-// S-shape (Skew Tetromino)
         shapes[4] = new TetrisShape(new int[][]{
                 {0, 1, 1},
                 {1, 1, 0}
         }, this, colors[4]);
 
-// Z-shape (Reverse Skew Tetromino)
         shapes[5] = new TetrisShape(new int[][]{
                 {1, 1, 0},
                 {0, 1, 1}
         }, this, colors[5]);
 
-// O-shape (Square Tetromino)
         shapes[6] = new TetrisShape(new int[][]{
                 {1, 1},
                 {1, 1}
@@ -88,13 +81,9 @@ public class BoardPanel extends JPanel implements KeyListener {
 
         currentShape = shapes[0];
 
-        // Function in here will run repeatedly with the specified delay.
-        looper = new Timer(delay, new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                update();
-                repaint();
-            }
+        looper = new Timer(delay, e -> {
+            update();
+            repaint();
         });
         looper.start();
     }
@@ -106,11 +95,9 @@ public class BoardPanel extends JPanel implements KeyListener {
     }
 
     public void setCurrentShape() {
-        // Check if the top row is filled
         if (isTopRowFilled()) {
             setGameOver();
         } else {
-            // Set a new shape if the top row is not filled
             currentShape = shapes[random.nextInt(shapes.length)];
             currentShape.reset();
         }
@@ -119,60 +106,59 @@ public class BoardPanel extends JPanel implements KeyListener {
     private boolean isTopRowFilled() {
         for (int col = 0; col < BOARD_WIDTH; col++) {
             if (board[0][col] != null) {
+                System.out.println("Column " + col + " in the top row is filled with: " + board[0][col]);
                 return true;
             }
         }
         return false;
     }
 
-    private void checkOverGame() {
-        int[][] coords = currentShape.getCoords();
-        for (int row = 0; row < coords.length; row++) {
-            for (int col = 0; col < coords[0].length; col++) {
-                int boardRow = row + currentShape.getY();
-                int boardCol = col + currentShape.getX();
-
-                // Check if the boardRow is within the valid range
-                if (coords[row][col] != 0 && boardRow >= 0 && boardRow < BOARD_HEIGHT) {
-                    if (board[boardRow][boardCol] != null) {
-                        state = STATE_GAME_OVER;
-                        return;
-                    }
-                }
-            }
-        }
+    public void reset_score() {
+        score = 0;
     }
-
 
     public void setGameOver() {
         state = STATE_GAME_OVER;
     }
 
+    public void pauseGame() {
+        state = STATE_GAME_PAUSE;
+    }
+
+    public void resumeGame() {
+        state = STATE_GAME_PLAY;
+    }
+
+    public boolean isGameRunning() {
+        return state == STATE_GAME_PLAY;
+    }
+
+    public boolean isGamePaused() {
+        return state == STATE_GAME_PAUSE;
+    }
+
+    public boolean isGamePauseByP() {
+        return pause_showText;
+    }
 
     @Override
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // // Set the drawing color to black and fill the entire panel with it (background)
         g.setColor(Color.black);
         g.fillRect(0, 0, getWidth(), getHeight());
 
-        // Render the current falling shape (tetromino)
         currentShape.render(g);
 
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[0].length; col++) {
                 if (board[row][col] != null) {
                     g.setColor(board[row][col]);
-                    // Syntax: g.fillRect(int x, int y, int width, int height)
-                    // X: The x-coordinate of the top-left corner of the rectangle.
-                    // Y: The y-coordinate of the top-left corner of the rectangle.
                     g.fillRect(col * BLOCK_SIZE, row * BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
                 }
             }
         }
 
-        // Draw the board grid
         g.setColor(Color.white);
         for (int row = 0; row < BOARD_HEIGHT; row++) {
             g.drawLine(0, BLOCK_SIZE * row, BLOCK_SIZE * BOARD_WIDTH, BLOCK_SIZE * row);
@@ -182,9 +168,7 @@ public class BoardPanel extends JPanel implements KeyListener {
             g.drawLine(col * BLOCK_SIZE, 0, col * BLOCK_SIZE, BLOCK_SIZE * BOARD_HEIGHT);
         }
 
-        // Draw the score
         g.setColor(Color.white);
-        // Syntax: g.drawString(String str, int x, int y);
         g.drawString("Score: " + score, 350, 50);
 
         if (state == STATE_GAME_OVER) {
@@ -192,14 +176,13 @@ public class BoardPanel extends JPanel implements KeyListener {
             g.drawString("GAME OVER (space key to restart)", 50, 200);
         }
 
-        if (state == STATE_GAME_PAUSE) {
+        if (state == STATE_GAME_PAUSE && pause_showText) {
             g.setColor(Color.white);
-            g.drawString("GAME PAUSED", 50, 200);
+            g.drawString("GAME PAUSED (Press P to continue)", 50, 200);
         }
     }
 
     public void resetBoard() {
-        // Clear the board
         for (int row = 0; row < board.length; row++) {
             for (int col = 0; col < board[row].length; col++) {
                 board[row][col] = null;
@@ -221,8 +204,7 @@ public class BoardPanel extends JPanel implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
         if (e.getKeyCode() == KeyEvent.VK_DOWN) {
-            System.out.println("Attempted to speed up");
-            currentShape.speedUp(); // Move the shape down by 1 unit
+            currentShape.speedUp();
         } else if (e.getKeyCode() == KeyEvent.VK_RIGHT) {
             currentShape.moveRight();
         } else if (e.getKeyCode() == KeyEvent.VK_LEFT) {
@@ -230,7 +212,7 @@ public class BoardPanel extends JPanel implements KeyListener {
         } else if (e.getKeyCode() == KeyEvent.VK_UP) {
             currentShape.rotateShape();
         }
-        // Clean the board
+
         if (state == STATE_GAME_OVER) {
             if (e.getKeyCode() == KeyEvent.VK_SPACE) {
                 resetBoard();
@@ -239,19 +221,26 @@ public class BoardPanel extends JPanel implements KeyListener {
             }
         }
 
-        // Pause the game
-        if (e.getKeyCode() == KeyEvent.VK_SPACE) {
+        if (e.getKeyCode() == KeyEvent.VK_P) {
             if (state == STATE_GAME_PLAY) {
-                state = STATE_GAME_PAUSE;
+                pause_showText = true;
+                pauseGame();
             } else if (state == STATE_GAME_PAUSE) {
-                state = STATE_GAME_PLAY;
+                pause_showText = false;
+                resumeGame();
             }
         }
     }
 
-
     @Override
     public void keyReleased(KeyEvent e) {
         // Empty method
+    }
+
+    @Override
+    public boolean requestFocusInWindow() {
+        boolean focused = super.requestFocusInWindow();
+        System.out.println("BoardPanel focus: " + focused);
+        return focused;
     }
 }

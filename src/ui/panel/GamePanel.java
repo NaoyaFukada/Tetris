@@ -4,6 +4,7 @@ import ui.MainFrame;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.KeyEvent;
 
 public class GamePanel extends JPanel {
     private MainFrame parentFrame;
@@ -27,7 +28,7 @@ public class GamePanel extends JPanel {
         JPanel bottomPanel = new JPanel(new BorderLayout());
 
         JButton backButton = new JButton("Back");
-        backButton.addActionListener(e -> parentFrame.showScreen("Main"));
+        backButton.addActionListener(e -> handleBackButton());
         bottomPanel.add(backButton, BorderLayout.CENTER);
 
         JLabel authorLabel = createLabel("Author: Naoya/Ryota", new Font("Arial", Font.PLAIN, 10));
@@ -38,7 +39,6 @@ public class GamePanel extends JPanel {
     }
 
     public void resetGame() {
-        // Call the reset logic from BoardPanel or handle it directly here
         board.resetBoard();
         board.setCurrentShape();
         board.setGamePlayState();
@@ -54,5 +54,36 @@ public class GamePanel extends JPanel {
 
     public BoardPanel getBoard() {
         return board;
+    }
+
+    private void handleBackButton() {
+        if (board.isGameRunning() || board.isGamePaused()) {
+            board.pauseGame();
+
+            int choice = JOptionPane.showConfirmDialog(
+                    this,
+                    "Are you sure you want to stop the game?",
+                    "Confirm Exit",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (choice == JOptionPane.YES_OPTION) {
+                parentFrame.showScreen("Main");
+            } else {
+                if (!board.isGamePauseByP()) {
+                    board.resumeGame();
+                }
+                board.requestFocusInWindow();
+            }
+        } else {
+            parentFrame.showScreen("Main");
+        }
+    }
+
+
+    // Ensure GamePanel does not process key events accidentally
+    @Override
+    protected void processKeyEvent(KeyEvent e) {
+        // Do nothing to prevent accidental key processing
     }
 }

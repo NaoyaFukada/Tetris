@@ -38,12 +38,14 @@ public class TetrisShape {
         this.x = 4.0f;
         this.y = 0.0f; // Start above the visible board
         collision = false;
+        boardPanel.reset_score();
 
         // Check for collision immediately after spawning
         for (int row = 0; row < coords.length; row++) {
             for (int col = 0; col < coords[row].length; col++) {
                 int boardRow = (int) y + row;
                 if (coords[row][col] != 0 && boardRow >= 0 && boardPanel.getBoard()[boardRow][(int) x + col] != null) {
+                    System.out.println("coords[row][col] != 0: " + coords[row][col] != 0 + "boardRow: " + boardRow + "boardPanel.getBoard()[boardRow][(int) x + col]" + boardPanel.getBoard()[boardRow][(int) x + col]);
                     boardPanel.setGameOver();
                     return;
                 }
@@ -207,9 +209,9 @@ public class TetrisShape {
         }
     }
 
-    public int[][] getCoords() {
-        return coords;
-    }
+//    public int[][] getCoords() {
+//        return coords;
+//    }
 
     public void speedUp() {
         if (!collision && canMoveDown()) {
@@ -248,11 +250,11 @@ public class TetrisShape {
         deltaX = -1;
     }
 
-    public int getY() {
-        return (int) y;
-    }
-
-    public int getX() {
-        return (int) x;
-    }
+//    public int getY() {
+//        return (int) y;
+//    }
+//
+//    public int getX() {
+//        return (int) x;
+//    }
 }
