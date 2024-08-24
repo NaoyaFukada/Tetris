@@ -18,6 +18,9 @@ public class MainFrame extends JFrame {
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
+        // Add SplashPanel to the mainPanel with CardLayout
+        mainPanel.add(new SplashPanel(), "Splash");
+
         // Add different panels to the mainPanel with CardLayout
         mainPanel.add(new MainPanel(this), "Main");
         mainPanel.add(new ConfigurePanel(this), "Config");
@@ -33,8 +36,15 @@ public class MainFrame extends JFrame {
         // Add the mainPanel to the JFrame
         add(mainPanel);
 
-        // Start with the main screen
-        cardLayout.show(mainPanel, "Main");
+        Timer splashTimer = new Timer(3000, e -> {
+            cardLayout.show(mainPanel, "Main"); // Switch to the Main screen
+            ((Timer) e.getSource()).stop(); // Stop the timer to prevent further actions
+        });
+        splashTimer.setRepeats(false); // Ensure the timer only fires once
+        splashTimer.start();
+
+        // Start with the splash screen
+        cardLayout.show(mainPanel, "Splash");
     }
 
     public void showScreen(String screenName) {
