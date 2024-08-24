@@ -83,44 +83,44 @@ public class MainPanel extends JPanel {
 
     // ActionListener for the Play button
     private ActionListener createPlayButtonListener() {
-        return new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mainFrame.showScreen("Game");
-                System.out.println("Play button pressed");
-            }
+        return e -> {
+            mainFrame.showScreen("Game");
+            System.out.println("Play button pressed");
         };
     }
 
     // ActionListener for the Config button
     private ActionListener createConfigButtonListener() {
-        return new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mainFrame.showScreen("Config");
-                System.out.println("Config button pressed");
-            }
+        return e -> {
+            mainFrame.showScreen("Config");
+            System.out.println("Config button pressed");
         };
     }
 
     // ActionListener for the High Score button
     private ActionListener createHighScoreButtonListener() {
-        return new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                mainFrame.showScreen("HighScores");
-                System.out.println("High Scores button pressed");
-            }
+        return e -> {
+            mainFrame.showScreen("HighScores");
+            System.out.println("High Scores button pressed");
         };
     }
 
-
     // ActionListener for the Exit button
     private ActionListener createExitButtonListener() {
-        return new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                System.exit(0);
+        return e -> {
+            // Show confirmation dialog
+            int choice = JOptionPane.showConfirmDialog(
+                    mainFrame,
+                    "Are you sure you want to exit the program?",
+                    "Confirm Exit",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            // Handle user's choice
+            if (choice == JOptionPane.YES_OPTION) {
+                System.exit(0); // Exit the program
+            } else {
+                mainFrame.showScreen("Main"); // Return to main screen (though we're already here)
             }
         };
     }

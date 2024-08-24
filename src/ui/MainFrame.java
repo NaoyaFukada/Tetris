@@ -8,7 +8,7 @@ import java.awt.*;
 public class MainFrame extends JFrame {
     private CardLayout cardLayout;
     private JPanel mainPanel;
-    private BoardPanel board;
+    private GamePanel gamePanel; // Reference to the GamePanel
 
     public MainFrame(String title) {
         super(title);
@@ -26,14 +26,8 @@ public class MainFrame extends JFrame {
         mainPanel.add(new MainPanel(this), "Main");
         mainPanel.add(new ConfigurePanel(this), "Config");
 
-        // Create the BoardPanel and GamePanel
-        board = new BoardPanel();
-        GamePanel gamePanel = new GamePanel(this);
-
-        // Add the BoardPanel to the GamePanel (assuming GamePanel holds the game board)
-        gamePanel.add(board, BorderLayout.CENTER);
-
-        // Add GamePanel to mainPanel
+        // Initialize and add the GamePanel
+        gamePanel = new GamePanel(this); // Initialize GamePanel
         mainPanel.add(gamePanel, "Game");
 
         // Add HighScorePanel to the mainPanel
@@ -65,8 +59,9 @@ public class MainFrame extends JFrame {
         // Request focus for the BoardPanel if the screen is the game screen
         if (screenName.equals("Game")) {
             SwingUtilities.invokeLater(() -> {
-                board.requestFocusInWindow();
-                System.out.println("BoardPanel focus requested. Focused: " + board.isFocusOwner());
+                gamePanel.resetGame(); // Reset the game state
+                gamePanel.getBoard().requestFocusInWindow(); // Request focus on the board
+                System.out.println("BoardPanel focus requested. Focused: " + gamePanel.getBoard().isFocusOwner());
             });
         }
     }
