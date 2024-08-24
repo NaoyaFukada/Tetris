@@ -38,7 +38,6 @@ public class TetrisShape {
         this.x = 4.0f;
         this.y = 0.0f; // Start above the visible board
         collision = false;
-        boardPanel.reset_score();
 
         // Check for collision immediately after spawning
         for (int row = 0; row < coords.length; row++) {
