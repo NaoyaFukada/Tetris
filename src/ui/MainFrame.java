@@ -8,7 +8,7 @@ import java.awt.*;
 public class MainFrame extends JFrame {
     private CardLayout cardLayout;
     private JPanel mainPanel;
-    private GamePanel gamePanel; // Reference to the GamePanel
+    private BoardPanel board;
 
     public MainFrame(String title) {
         super(title);
@@ -18,15 +18,22 @@ public class MainFrame extends JFrame {
         cardLayout = new CardLayout();
         mainPanel = new JPanel(cardLayout);
 
-        // Add SplashPanel to the mainPanel with CardLayout
-        mainPanel.add(new SplashPanel(), "Splash");
+        // Add SplashPanel to the mainPanel
+        SplashPanel splashPanel = new SplashPanel();
+        mainPanel.add(splashPanel, "Splash");
 
         // Add different panels to the mainPanel with CardLayout
         mainPanel.add(new MainPanel(this), "Main");
         mainPanel.add(new ConfigurePanel(this), "Config");
 
-        // Initialize and add the GamePanel
-        gamePanel = new GamePanel(this); // Initialize GamePanel
+        // Create the BoardPanel and GamePanel
+        board = new BoardPanel();
+        GamePanel gamePanel = new GamePanel(this);
+
+        // Add the BoardPanel to the GamePanel (assuming GamePanel holds the game board)
+        gamePanel.add(board, BorderLayout.CENTER);
+
+        // Add GamePanel to mainPanel
         mainPanel.add(gamePanel, "Game");
 
         // Add HighScorePanel to the mainPanel
@@ -36,15 +43,20 @@ public class MainFrame extends JFrame {
         // Add the mainPanel to the JFrame
         add(mainPanel);
 
-        Timer splashTimer = new Timer(3000, e -> {
-            cardLayout.show(mainPanel, "Main"); // Switch to the Main screen
-            ((Timer) e.getSource()).stop(); // Stop the timer to prevent further actions
-        });
-        splashTimer.setRepeats(false); // Ensure the timer only fires once
-        splashTimer.start();
-
-        // Start with the splash screen
+        // Show the splash screen first
         cardLayout.show(mainPanel, "Splash");
+
+        // Transition to the main screen after a delay
+        Timer timer = new Timer(5000, e -> {
+            cardLayout.show(mainPanel, "Main");
+            // Ensure main frame is visible after splash
+            setVisible(true);
+        });
+        timer.setRepeats(false); // Ensure the timer runs only once
+        timer.start();
+
+        // Optionally, you can set the splash screen to be invisible or remove it after the transition
+        timer.addActionListener(e -> splashPanel.setVisible(false));
     }
 
     public void showScreen(String screenName) {
@@ -53,17 +65,18 @@ public class MainFrame extends JFrame {
         // Request focus for the BoardPanel if the screen is the game screen
         if (screenName.equals("Game")) {
             SwingUtilities.invokeLater(() -> {
-                gamePanel.resetGame(); // Reset the game state
-                gamePanel.getBoard().requestFocusInWindow(); // Request focus on the board
-                System.out.println("BoardPanel focus requested. Focused: " + gamePanel.getBoard().isFocusOwner());
+                board.requestFocusInWindow();
+                System.out.println("BoardPanel focus requested. Focused: " + board.isFocusOwner());
             });
         }
     }
 
     public static void main(String[] args) {
         SwingUtilities.invokeLater(() -> {
+            // Create and configure the main frame
             MainFrame frame = new MainFrame("Tetris");
-            frame.setLocationRelativeTo(null);
+            frame.setLocationRelativeTo(null);  // Center on screen
+            // Make the frame visible after splash screen is handled
             frame.setVisible(true);
         });
     }
